@@ -8,6 +8,8 @@ struct Engine {
     int WIDTH = 800;
     int HEIGHT = 600;
     unsigned int shader;
+    unsigned int VAO;
+    unsigned int VBO;
 
     /*creates the window*/
     Engine() {
@@ -54,10 +56,33 @@ struct Engine {
             "../src/shaders/vertex.txt",
             "../src/shaders/fragment.txt"
         );
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        float vertices[] = {
+            -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+            0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f, 1.0f
+        };
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+
+
     }
 
     /*shuts down glfw*/
     ~Engine() {
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &VBO);
         glDeleteProgram(shader);
         glfwTerminate();
     }
@@ -66,6 +91,7 @@ struct Engine {
         while (!glfwWindowShouldClose(window)) {
             glClear(GL_COLOR_BUFFER_BIT);
             glUseProgram(shader);
+            glBindVertexArray(VAO);
 
             draw();
 
@@ -76,6 +102,7 @@ struct Engine {
 
     void draw() {
         //draw everything here
+        glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 };
 
@@ -147,3 +174,4 @@ unsigned int make_module(const std::string& filepath, unsigned int module_type) 
 
     return shaderModule;
 }
+
