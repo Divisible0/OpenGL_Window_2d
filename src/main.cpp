@@ -3,15 +3,69 @@
 unsigned int make_module(const std::string& filepath, unsigned int module_type);
 unsigned int make_shader(const std::string& vertex_filepath, const std::string& fragment_filepath);
 
+struct Mesh {
+    unsigned int VAO;
+    unsigned int VBO;
+    int vertexCount;
+
+    Mesh(const std::vector<float>& vertices) {
+        vertexCount = vertices.size() / 7;
+
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+    }
+
+    ~Mesh() {
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &VBO);
+    }
+
+    void draw() {
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+    }
+};
+
+struct Triangle {
+    Mesh* mesh;
+    
+    Triangle() {
+        std::vector<float> vertices = {
+            -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+            0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f, 1.0f
+        };
+        mesh = new Mesh(vertices);
+    }
+
+    ~Triangle() {
+        delete mesh;
+    }
+
+    void draw() {
+        mesh->draw();
+    }
+};
+
 struct Engine {
     GLFWwindow* window;
     int WIDTH = 800;
     int HEIGHT = 600;
     unsigned int shader;
-    unsigned int VAO;
-    unsigned int VBO;
 
-    /*creates the window*/
+    //what is a triangle?
+    Triangle* triangle;
+
     Engine() {
         //wake up GLFW
         if (!glfwInit()) {
@@ -56,33 +110,16 @@ struct Engine {
             "../src/shaders/vertex.txt",
             "../src/shaders/fragment.txt"
         );
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
 
-        glBindVertexArray(VAO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-        float vertices[] = {
-            -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-            0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
-            0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f, 1.0f
-        };
-
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
-        glEnableVertexAttribArray(1);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-
+        //you won't believe this but this makes a triangle!
+        triangle = new Triangle();
 
     }
 
-    /*shuts down glfw*/
     ~Engine() {
-        glDeleteVertexArrays(1, &VAO);
-        glDeleteBuffers(1, &VBO);
+        //this deletes the triangle... so crazy!
+        delete triangle;
+
         glDeleteProgram(shader);
         glfwTerminate();
     }
@@ -91,9 +128,8 @@ struct Engine {
         while (!glfwWindowShouldClose(window)) {
             glClear(GL_COLOR_BUFFER_BIT);
             glUseProgram(shader);
-            glBindVertexArray(VAO);
 
-            draw();
+            draw(); //completely useless but clean... maybe?
 
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -101,10 +137,10 @@ struct Engine {
     }
 
     void draw() {
-        //draw everything here
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        triangle->draw(); //this? you guessed it. it draws the triangle. every frame!
     }
 };
+
 
 int main(){
     Engine engine;
@@ -112,7 +148,7 @@ int main(){
     return 0;
 }
 
-/*links the shaders*/
+
 unsigned int make_shader(const std::string& vertex_filepath, const std::string& fragment_filepath) {
 
     std::vector<unsigned int> modules;
@@ -140,7 +176,6 @@ unsigned int make_shader(const std::string& vertex_filepath, const std::string& 
     return shader;
 }
 
-/*compiles the shaders*/
 unsigned int make_module(const std::string& filepath, unsigned int module_type) {
 
     std::ifstream file;
@@ -174,4 +209,3 @@ unsigned int make_module(const std::string& filepath, unsigned int module_type) 
 
     return shaderModule;
 }
-
