@@ -17,7 +17,7 @@ struct Mesh {
         glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_DYNAMIC_DRAW);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
 
@@ -34,17 +34,25 @@ struct Mesh {
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, vertexCount);
     }
+
+    void update(const std::vector<float>& vertices) {
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), vertices.data());
+    }
 };
 
 struct Triangle {
     Mesh* mesh;
+    std::vector<float> vertices;
     
     Triangle() {
-        std::vector<float> vertices = {
-            -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-            0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
-            0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f, 1.0f
-        };
+        vertices: 
+            vertices = {
+                -0.5f, -0.5f,  0.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+                0.5f, -0.5f,  0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
+                0.0f,  0.5f,  0.0f,  0.0f, 0.0f, 1.0f, 1.0f
+            };
+        
         mesh = new Mesh(vertices);
     }
 
@@ -55,16 +63,27 @@ struct Triangle {
     void draw() {
         mesh->draw();
     }
+
+    void update() {
+        double t = glfwGetTime();
+        double s = 0.125 * sin(t);
+        float y = (float) s;
+
+        vertices[1] = -0.5f + y;
+        vertices[8] = -0.5f + y;
+        vertices[15] = 0.5f + y;
+
+        mesh->update(vertices);
+    }
 };
 
 struct Engine {
     GLFWwindow* window;
+    Triangle* triangle;
+
     int WIDTH = 800;
     int HEIGHT = 600;
     unsigned int shader;
-
-    //what is a triangle?
-    Triangle* triangle;
 
     Engine() {
         //wake up GLFW
@@ -92,6 +111,7 @@ struct Engine {
         //makes all openGL calls go to that window
         glfwMakeContextCurrent(window);
         glewExperimental = GL_TRUE;
+        
         if (glewInit() != GLEW_OK) {
             std::cout << "GLEW didn't start" << std::endl;
             exit(EXIT_FAILURE);
@@ -137,7 +157,8 @@ struct Engine {
     }
 
     void draw() {
-        triangle->draw(); //this? you guessed it. it draws the triangle. every frame!
+        triangle->draw(); //this? you guessed it. it draws the triangle.
+        triangle->update(); //and this updates the triangle every frame!
     }
 };
 
