@@ -1,57 +1,24 @@
 #include "config.h"
+#include "mesh.h"
 
 unsigned int make_module(const std::string& filepath, unsigned int module_type);
 unsigned int make_shader(const std::string& vertex_filepath, const std::string& fragment_filepath);
 
-struct Mesh {
-    unsigned int VAO;
-    unsigned int VBO;
-    int vertexCount;
-
-    Mesh(const std::vector<float>& vertices) {
-        vertexCount = vertices.size() / 7;
-
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
-
-        glBindVertexArray(VAO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_DYNAMIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
-        glEnableVertexAttribArray(1);
-    }
-
-    ~Mesh() {
-        glDeleteVertexArrays(1, &VAO);
-        glDeleteBuffers(1, &VBO);
-    }
-
-    void draw() {
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, vertexCount);
-    }
-
-    void update(const std::vector<float>& vertices) {
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(float), vertices.data());
-    }
-};
-
 struct Triangle {
     Mesh* mesh;
+    std::vector<float> baseVertices;
     std::vector<float> vertices;
     
     Triangle() {
-        vertices: 
-            vertices = {
+        baseVertices: 
+            baseVertices = {
                 -0.5f, -0.5f,  0.0f,  1.0f, 0.0f, 0.0f, 1.0f,
                 0.5f, -0.5f,  0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
                 0.0f,  0.5f,  0.0f,  0.0f, 0.0f, 1.0f, 1.0f
             };
+        
+        vertices:
+            vertices = baseVertices;
         
         mesh = new Mesh(vertices);
     }
@@ -69,9 +36,9 @@ struct Triangle {
         double s = 0.125 * sin(t);
         float y = (float) s;
 
-        vertices[1] = -0.5f + y;
-        vertices[8] = -0.5f + y;
-        vertices[15] = 0.5f + y;
+        vertices[1] = baseVertices[1] + y;
+        vertices[8] = baseVertices[8] + y;
+        vertices[15] = baseVertices[15] + y;
 
         mesh->update(vertices);
     }
