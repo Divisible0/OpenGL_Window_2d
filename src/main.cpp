@@ -1,48 +1,8 @@
 #include "config.h"
-#include "mesh.h"
+#include "triangle.h"
 
 unsigned int make_module(const std::string& filepath, unsigned int module_type);
 unsigned int make_shader(const std::string& vertex_filepath, const std::string& fragment_filepath);
-
-struct Triangle {
-    Mesh* mesh;
-    std::vector<float> baseVertices;
-    std::vector<float> vertices;
-    
-    Triangle() {
-        baseVertices: 
-            baseVertices = {
-                -0.5f, -0.5f,  0.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-                0.5f, -0.5f,  0.0f,  0.0f, 1.0f, 0.0f, 1.0f,
-                0.0f,  0.5f,  0.0f,  0.0f, 0.0f, 1.0f, 1.0f
-            };
-        
-        vertices:
-            vertices = baseVertices;
-        
-        mesh = new Mesh(vertices);
-    }
-
-    ~Triangle() {
-        delete mesh;
-    }
-
-    void draw() {
-        mesh->draw();
-    }
-
-    void update() {
-        double t = glfwGetTime();
-        double s = 0.125 * sin(t);
-        float y = (float) s;
-
-        vertices[1] = baseVertices[1] + y;
-        vertices[8] = baseVertices[8] + y;
-        vertices[15] = baseVertices[15] + y;
-
-        mesh->update(vertices);
-    }
-};
 
 struct Engine {
     GLFWwindow* window;
@@ -94,8 +54,8 @@ struct Engine {
 
         //specifies the shaders
         shader = make_shader(
-            "../src/shaders/vertex.txt",
-            "../src/shaders/fragment.txt"
+            "../shaders/vertex.txt",
+            "../shaders/fragment.txt"
         );
 
         //you won't believe this but this makes a triangle!
