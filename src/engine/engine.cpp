@@ -28,8 +28,10 @@ Engine::Engine() {
     glfwMakeContextCurrent(window);
     glewExperimental = GL_TRUE;
         
-    if (glewInit() != GLEW_OK) {
-        std::cout << "GLEW didn't start" << std::endl;
+    
+    GLenum glewStatus = glewInit();
+    if (glewStatus != GLEW_OK && glewStatus != GLEW_ERROR_NO_GLX_DISPLAY) {
+        std::cout << "GLEW didn't start: " << glewGetErrorString(glewStatus) << std::endl;
         exit(EXIT_FAILURE);
     }
 
