@@ -1,4 +1,4 @@
-#include "mesh.h"
+#include "engine/mesh.h"
 
 Mesh::Mesh(const std::vector<float>& vertices) {
 

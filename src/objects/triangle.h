@@ -1,6 +1,6 @@
 #pragma once
 #include "config.h"
-#include "mesh.h"
+#include "engine/mesh.h"
 
 
 struct Triangle {

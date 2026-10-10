@@ -1,4 +1,4 @@
-#include "triangle.h"
+#include "objects/triangle.h"
 
 Triangle::Triangle() {
 

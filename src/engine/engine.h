@@ -1,7 +1,7 @@
 #pragma once
 #include "config.h"
-#include "triangle.h"
-#include "shader.h"
+#include "objects/triangle.h"
+#include "engine/shader.h"
 
 struct Engine {
     GLFWwindow* window;
